@@ -103,7 +103,7 @@ Phase 1 establishes the extension repository foundation and delivers the core ed
 ---
 
 ### Task 1.4: Pre-flight Linting & Diagnostic Provider
-- **Status**: `[ ] Pending`
+- **Status**: `[x] Completed`
 - **Goal**: Run background linting and surface issues in the VS Code "Problems" panel.
 - **Implementation Steps**:
   1. Create `src/linter/recipeLinter.ts`:

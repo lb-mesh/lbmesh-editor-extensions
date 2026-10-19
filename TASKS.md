@@ -23,7 +23,7 @@ For execution rules and AI collaboration boundaries, refer to [AI Collaboration 
 - [x] **Task 1.1**: Extension Scaffolding & Tooling Setup (`package.json`, `tsconfig.json`, `esbuild`, Mocha test harness)
 - [x] **Task 1.2**: JSON/YAML Schema Definition for `recipe.v1.yaml` (`schemas/recipe.v1.json`, YAML Language Server registration)
 - [x] **Task 1.3**: Boilerplate Snippets (`snippets/lbmesh-snippets.json` for Postgres, Redis, Services, Recipe headers)
-- [ ] **Task 1.4**: Pre-flight Linting & Diagnostic Provider (`src/linter/recipeLinter.ts`, Problems panel integration)
+- [x] **Task 1.4**: Pre-flight Linting & Diagnostic Provider (`src/linter/recipeLinter.ts`, Problems panel integration)
 - [ ] **Task 1.5**: Extension Configuration & Command Palette Integration (`lbmesh.binaryPath`, `lbmesh.lintCurrentRecipe`, `lbmesh.version`)
 
 ### Phase 2: Visual Sidebar & Webview Control Panel

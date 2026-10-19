@@ -1,0 +1,8 @@
+version: "1"
+services:
+  web:
+    image: nginx
+    healthcheck:
+      test: curl -f http://localhost
+      interval: 10 seconds
+      retries: -1

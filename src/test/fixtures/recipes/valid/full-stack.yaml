@@ -1,0 +1,57 @@
+version: "1"
+project: demo-app
+
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    resources:
+      memory: 512M
+      cpus: 1
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [backend]
+
+  cache:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "128mb"]
+    ports:
+      - container: 6379
+        host: 6379
+    resources:
+      memory: 128M
+      cpus: "0.25"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1m30s
+
+  api:
+    image: ghcr.io/example/api:latest
+    command: npm start
+    ports: [8080, "9229:9229/tcp"]
+    env:
+      - NODE_ENV=development
+      - DEBUG
+    volumes:
+      - source: ./src
+        target: /app/src
+        read_only: true
+    depends_on: [db, cache]
+    networks: [backend]
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:

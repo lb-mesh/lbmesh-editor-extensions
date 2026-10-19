@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lbmesh.dev/schemas/recipe.v1.json",
+  "title": "LBMesh Recipe (v1)",
+  "description": "Defines a local LBMesh stack: its services, networks, and volumes.",
+  "type": "object",
+  "required": ["version", "services"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Recipe specification version.",
+      "markdownDescription": "Recipe specification version. Use `\"1\"`.",
+      "enum": ["1", 1]
+    },
+    "project": {
+      "description": "Project name used to namespace containers, networks, and volumes.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "services": {
+      "description": "Map of service name to service definition.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/definitions/name" },
+      "additionalProperties": { "$ref": "#/definitions/service" }
+    },
+    "networks": {
+      "description": "Named networks services can attach to.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/name" },
+      "additionalProperties": { "$ref": "#/definitions/networkDefinition" }
+    },
+    "volumes": {
+      "description": "Named volumes services can mount.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/name" },
+      "additionalProperties": { "$ref": "#/definitions/volumeDefinition" }
+    }
+  },
+  "definitions": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+    },
+    "stringOrStringArray": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "duration": {
+      "description": "Duration such as `10s`, `500ms`, or `1m30s`.",
+      "type": "string",
+      "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+    },
+    "service": {
+      "type": "object",
+      "required": ["image"],
+      "additionalProperties": false,
+      "properties": {
+        "image": {
+          "description": "Container image reference, e.g. `postgres:16-alpine`.",
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "description": "Overrides the image's default command.",
+          "$ref": "#/definitions/stringOrStringArray"
+        },
+        "ports": {
+          "description": "Port mappings, as `host:container[/protocol]` strings or port objects.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/port" }
+        },
+        "environment": {
+          "description": "Environment variables, as a map or a list of `KEY=value` strings.",
+          "$ref": "#/definitions/environment"
+        },
+        "env": {
+          "description": "Alias for `environment`.",
+          "$ref": "#/definitions/environment"
+        },
+        "volumes": {
+          "description": "Volume mounts, as `source:target[:ro|rw]` strings or mount objects.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/volumeMount" }
+        },
+        "networks": {
+          "description": "Names of networks (from the top-level `networks` map) this service joins.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/name" }
+        },
+        "resources": { "$ref": "#/definitions/resources" },
+        "healthcheck": { "$ref": "#/definitions/healthcheck" },
+        "depends_on": {
+          "description": "Services that must start before this one.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/name" }
+        }
+      }
+    },
+    "port": {
+      "oneOf": [
+        {
+          "description": "Container port to publish on the same host port.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        {
+          "description": "`host:container[/protocol]`, e.g. `5432:5432` or `53:53/udp`.",
+          "type": "string",
+          "pattern": "^([0-9]{1,5}:)?[0-9]{1,5}(/(tcp|udp))?$"
+        },
+        {
+          "type": "object",
+          "required": ["container"],
+          "additionalProperties": false,
+          "properties": {
+            "host": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "container": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "protocol": { "enum": ["tcp", "udp"], "default": "tcp" }
+          }
+        }
+      ]
+    },
+    "environment": {
+      "oneOf": [
+        {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        },
+        {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(=.*)?$" }
+        }
+      ]
+    },
+    "volumeMount": {
+      "oneOf": [
+        {
+          "description": "`source:target[:ro|rw]`, where source is a named volume or host path.",
+          "type": "string",
+          "pattern": "^[^:]+:[^:]+(:(ro|rw))?$"
+        },
+        {
+          "type": "object",
+          "required": ["source", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "type": "string", "minLength": 1 },
+            "target": { "type": "string", "minLength": 1 },
+            "read_only": { "type": "boolean", "default": false }
+          }
+        }
+      ]
+    },
+    "resources": {
+      "description": "Resource limits for the service container.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "memory": {
+          "description": "Memory limit, e.g. `256M` or `1G`.",
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?[bBkKmMgG]?$"
+        },
+        "cpus": {
+          "description": "CPU limit as a fraction of cores, e.g. `0.5`.",
+          "oneOf": [
+            { "type": "number", "exclusiveMinimum": 0 },
+            { "type": "string", "pattern": "^[0-9]*\\.?[0-9]+$" }
+          ]
+        }
+      }
+    },
+    "healthcheck": {
+      "description": "Container health probe.",
+      "type": "object",
+      "required": ["test"],
+      "additionalProperties": false,
+      "properties": {
+        "test": {
+          "description": "Probe command, e.g. `[\"CMD\", \"pg_isready\"]`.",
+          "$ref": "#/definitions/stringOrStringArray"
+        },
+        "interval": { "$ref": "#/definitions/duration" },
+        "timeout": { "$ref": "#/definitions/duration" },
+        "retries": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "networkDefinition": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "driver": { "type": "string" },
+            "external": { "type": "boolean" }
+          }
+        }
+      ]
+    },
+    "volumeDefinition": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "driver": { "type": "string" },
+            "external": { "type": "boolean" }
+          }
+        }
+      ]
+    }
+  }
+}

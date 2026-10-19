@@ -1,0 +1,84 @@
+{
+  "LBMesh Recipe": {
+    "prefix": "lbmesh-recipe",
+    "description": "LBMesh recipe scaffold: version, project, and an initial service.",
+    "body": [
+      "version: \"1\"",
+      "project: ${1:my-project}",
+      "",
+      "services:",
+      "  ${2:app}:",
+      "    image: ${3:nginx:alpine}",
+      "    ports:",
+      "      - \"${4:8080}:${5:80}\"",
+      "    resources:",
+      "      memory: ${6:256M}",
+      "      cpus: ${7:0.5}",
+      "$0"
+    ]
+  },
+  "LBMesh PostgreSQL Service": {
+    "prefix": "lbmesh-postgres",
+    "description": "PostgreSQL service with standard environment variables, a data volume, and a health check. Declare the named volume under top-level `volumes`.",
+    "body": [
+      "${1:db}:",
+      "  image: ${2|postgres:16-alpine,postgres:15-alpine,postgres:14-alpine|}",
+      "  ports:",
+      "    - \"${3:5432}:5432\"",
+      "  environment:",
+      "    POSTGRES_DB: ${4:app}",
+      "    POSTGRES_USER: ${5:app}",
+      "    POSTGRES_PASSWORD: ${6:change-me}",
+      "  volumes:",
+      "    - ${7:pgdata}:/var/lib/postgresql/data",
+      "  resources:",
+      "    memory: ${8:512M}",
+      "    cpus: ${9:1}",
+      "  healthcheck:",
+      "    test: [\"CMD\", \"pg_isready\", \"-U\", \"${5:app}\"]",
+      "    interval: 10s",
+      "    timeout: 5s",
+      "    retries: 5",
+      "$0"
+    ]
+  },
+  "LBMesh Redis Service": {
+    "prefix": "lbmesh-redis",
+    "description": "Redis cache service on port 6379 with a memory limit and health check.",
+    "body": [
+      "${1:cache}:",
+      "  image: ${2|redis:7-alpine,redis:6-alpine|}",
+      "  command: [\"redis-server\", \"--maxmemory\", \"${3:128mb}\", \"--maxmemory-policy\", \"${4|allkeys-lru,volatile-lru,noeviction|}\"]",
+      "  ports:",
+      "    - \"${5:6379}:6379\"",
+      "  resources:",
+      "    memory: ${6:128M}",
+      "    cpus: ${7:0.25}",
+      "  healthcheck:",
+      "    test: [\"CMD\", \"redis-cli\", \"ping\"]",
+      "    interval: 10s",
+      "    timeout: 3s",
+      "    retries: 5",
+      "$0"
+    ]
+  },
+  "LBMesh Service": {
+    "prefix": "lbmesh-service",
+    "description": "Generic service block with resource bounds and a health check.",
+    "body": [
+      "${1:service}:",
+      "  image: ${2:image:tag}",
+      "  ports:",
+      "    - \"${3:8080}:${4:8080}\"",
+      "  resources:",
+      "    memory: ${5:256M}",
+      "    cpus: ${6:0.5}",
+      "  healthcheck:",
+      "    test: [\"CMD\", \"${7:wget}\", \"-q\", \"--spider\", \"${8:http://localhost:8080/health}\"]",
+      "    interval: ${9:30s}",
+      "    timeout: ${10:5s}",
+      "    retries: ${11:3}",
+      "$0"
+    ]
+  }
+}

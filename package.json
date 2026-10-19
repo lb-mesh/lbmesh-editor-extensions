@@ -70,6 +70,12 @@
         "fileMatch": "**/lbmesh.yml",
         "url": "./schemas/recipe.v1.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "yaml",
+        "path": "./snippets/lbmesh-snippets.json"
+      }
     ]
   },
   "scripts": {

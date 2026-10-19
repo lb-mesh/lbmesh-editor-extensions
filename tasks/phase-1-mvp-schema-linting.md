@@ -86,7 +86,7 @@ Phase 1 establishes the extension repository foundation and delivers the core ed
 ---
 
 ### Task 1.3: Recipe Boilerplate Snippets
-- **Status**: `[ ] Pending`
+- **Status**: `[x] Completed`
 - **Goal**: Supply convenient boilerplate templates for fast recipe authoring.
 - **Implementation Steps**:
   1. Create `snippets/lbmesh-snippets.json` with snippets:
